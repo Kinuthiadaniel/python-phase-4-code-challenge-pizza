@@ -98,17 +98,22 @@ def post_to_restaurant_pizza():
         ) 
         return response
     elif request.method == "POST":
-        new_restaurant_pizza = RestaurantPizza(
-        pizza_id = request.form.get('pizza_id'),
-        restaurant_id = request.form.get('restaurant_id'),
-        price = request.form.get('price'))
-    
-        db.session.add(new_restaurant_pizza)
-        db.session.commit()
+        try:
+            new_restaurant_pizza = RestaurantPizza(
+                price = request.get_json()['price'],
+                pizza_id = request.get_json()['pizza_id'],
+                restaurant_id = request.get_json()['restaurant_id']
+            )
         
-        rest_pizza_dict = new_restaurant_pizza.to_dict()
-        response = make_response(rest_pizza_dict, 201)
-        return response
+            db.session.add(new_restaurant_pizza)
+            db.session.commit()
+            response = make_response(new_restaurant_pizza.to_dict(), 201, {"Content-Type":"application/json"})
+            return response
+        
+        except ValueError:
+            message = {"errors":[f"validation errors"]}
+            response= make_response(message, 400)
+            return response
 
 
 
